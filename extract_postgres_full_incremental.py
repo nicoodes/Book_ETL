@@ -11,7 +11,9 @@ host = parser.get("cluster_config", "host")
 port = parser.get("cluster_config", "port")
 
 
+
 # connect to cluster
+
 rs_conn=psycopg2.connect(
 	"dbname="+dbname
 	+" user="+user
@@ -38,7 +40,9 @@ result=rs_cursor.fetchone()
 print(result)
 
 # there's only one row and column returned
-last_updated_warehouse=result[0]
+## HERE FOR POSTGRES I CHANGED TO result FROM result[0], WAS GIVING ERROR TypeError: 'datetime.datetime' object does not support indexing
+last_updated_warehouse=result
+print(last_updated_warehouse)
 
 # close cursor and commit the transaction
 rs_cursor.close()
@@ -50,27 +54,19 @@ rs_conn.close()
 
 
 # get MySQL info and connect
-hostname = parser.get("mysql_config", "hostname")
-port = parser.get("mysql_config", "port")
-username = parser.get("mysql_config", "username")
-dbname = parser.get("mysql_config", "database")
-password = parser.get("mysql_config", "password")
+hostname = parser.get("postgres_config", "hostname")
+port = parser.get("postgres_config", "port")
+username = parser.get("postgres_config", "username")
+dbname = parser.get("postgres_config", "database")
+password = parser.get("postgres_config", "password")
 
-conn = pymysql.connect(host=hostname,
-	user=username,
-	password=password,
-	db=dbname,
-	port=int(port))
-if conn is None:
-	print("Error connecting to the MySQL database")
-else:
-	print("MySQL connection established!")
+conn = psycopg2.connect("dbname="+dbname+" user="+username+" password="+password+" host="+hostname+" port="+port)
 
 m_query="""SELECT *
 FROM Orders
 WHERE LastUpdated > %s;"""
 
-local_filename="order_extract.csv"
+local_filename="order_extract_postgres.csv"
 
 
 m_cursor=conn.cursor()
@@ -94,6 +90,7 @@ conn.close()
 
 # Uploading csv to S3 bucket
 # get credentials
+
 #parser=configparser.ConfigParser()
 #parser.read('pipeline.conf')
 access_key = parser.get("aws_boto_credentials", "access_key")

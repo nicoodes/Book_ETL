@@ -19,6 +19,16 @@ rs_conn = psycopg2.connect(
     + " host="+host
     + " port="+port)
 
+##############################
+# ADDING TO DO A FULL LOAD
+sql = "TRUNCATE public.Orders;"
+cur = rs_conn.cursor()
+cur.execute(sql)
+
+cur.close()
+rs_conn.commit()
+##############################
+
 # Uploading csv to S3 bucket
 # get credentials
 # parser=configparser.ConfigParser()
